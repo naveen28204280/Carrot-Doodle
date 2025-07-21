@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding for Treasure - 3D Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8);
+            z-index: 1000;
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 2.2vw, 18px);
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .ui-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            width: clamp(320px, 25vw, 400px);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .ui-panel.hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #4CAF50;
+        }
+
+        .close-btn {
+            background: #ff4757;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .code-blocks {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .code-block {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 8px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .code-block:hover {
+            transform: translateY(-2px);
+        }
+
+        .code-sequence {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .sequence-item {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .run-btn {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            flex: 2;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .status {
+            padding: 15px;
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .status.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .level-selector {
+            position: absolute;
+            top: clamp(120px, 15vh, 170px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .level-btn {
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            font-weight: 700;
+            color: white;
+            font-size: 14px;
+        }
+
+        .level-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            font-weight: 700;
+            z-index: 1000;
+        }
+
+        .floating-icon {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-icon.show {
+            display: flex;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 28px;
+            font-weight: 800;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .ui-panel {
+                width: calc(100vw - 40px);
+                padding: 20px;
+            }
+            
+            .code-block {
+                padding: 10px 6px;
+                font-size: 10px;
+            }
+        }
+
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+            backdrop-filter: blur(15px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-content {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(44, 62, 80, 0.9));
+            border: 3px solid rgba(255, 215, 0, 0.6);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+            width: clamp(300px, 70vw, 500px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: welcomeSlideIn 0.8s ease-out;
+        }
+
+        @keyframes welcomeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .welcome-subtitle {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .welcome-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            padding: 0 10px;
+        }
+
+        .welcome-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .welcome-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .welcome-input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .welcome-buttons {
+            display: flex;
+            justify-content: center;
+        }
+
+        .welcome-start-btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .welcome-start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .welcome-input:invalid {
+            border-color: #ff4757;
+            box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+        }
+
+        .welcome-start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Player name display */
+        .player-info {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Leaderboard Styles */
+        .leaderboard-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .leaderboard-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .leaderboard-modal.show {
+            display: flex;
+        }
+
+        .leaderboard-content {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(44, 62, 80, 0.9));
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 20px;
+            padding: 30px;
+            width: clamp(300px, 80vw, 700px);
+            max-height: 80vh;
+            overflow-y: auto;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 15px;
+        }
+
+        .leaderboard-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .leaderboard-close {
+            background: #ff4757;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-entry:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .leaderboard-entry.rank-1 {
+            border-left-color: #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+        }
+
+        .leaderboard-entry.rank-2 {
+            border-left-color: #C0C0C0;
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.1));
+        }
+
+        .leaderboard-entry.rank-3 {
+            border-left-color: #CD7F32;
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.1));
+        }
+
+        .leaderboard-rank {
+            font-size: 24px;
+            font-weight: 800;
+            width: 50px;
+            text-align: center;
+        }
+
+        .leaderboard-player {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .leaderboard-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .leaderboard-details {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+
+        .level-progress {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        .level-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .level-completed {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .level-incomplete {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ccc;
+        }
+
+        .leaderboard-score {
+            font-size: 20px;
+            font-weight: 800;
+            color: #4CAF50;
+            text-align: right;
+        }
+
+        .personal-best {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+            to { box-shadow: 0 0 15px rgba(76, 175, 80, 0.8); }
+        }
+
+        .no-scores {
+            text-align: center;
+            padding: 30px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .clear-scores-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-scores-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .ui-panel {
+                width: calc(100vw - 40px);
+                padding: 20px;
+            }
+            
+            .code-block {
+                padding: 10px 6px;
+                font-size: 10px;
+            }
+
+            .leaderboard-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            .leaderboard-content {
+                width: 95vw;
+                padding: 20px;
+            }
+
+            .leaderboard-title {
+                font-size: 24px;
+            }
+
+            .leaderboard-entry {
+                padding: 12px;
+            }
+
+            .leaderboard-rank {
+                font-size: 20px;
+            }
+
+            .leaderboard-name {
+                font-size: 16px;
+            }
+
+            .leaderboard-score {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div>Loading Treasure World... 💰</div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content">
+            <div class="welcome-title">🏴‍☠️ Welcome, Treasure Hunter!</div>
+            <div class="welcome-subtitle">Ready for your coding adventure?</div>
+            <div class="welcome-description">
+                Program your explorer to collect golden treasures using simple commands.
+                Your scores will be tracked on the leaderboard!
+            </div>
+            <input type="text" id="playerNameWelcome" class="welcome-input" placeholder="Enter your name (required)" maxlength="20" required>
+            <div class="welcome-buttons">
+                <button class="welcome-start-btn" onclick="startGame()">🚀 Start Adventure</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div class="leaderboard-modal" id="leaderboardModal">
+        <div class="leaderboard-content">
+            <div class="leaderboard-header">
+                <div class="leaderboard-title">🏆 Hall of Fame</div>
+                <button class="leaderboard-close" onclick="hideLeaderboard()">×</button>
+            </div>
+            <div id="leaderboardList"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="clear-scores-btn" onclick="clearLeaderboard()">Clear All Scores</button>
+            </div>
+        </div>
+    </div>
+    
+    <button class="leaderboard-btn" onclick="showLeaderboard()">
+        🏆 Leaderboard
+    </button>
+    
+    <div class="player-info" id="playerInfo" style="display: none;">
+        👤 <span id="currentPlayerName"></span>
+    </div>
+    
+    <div class="header">
+        <h1 style="font-size: 24px; margin-bottom: 5px;">Coding for Treasure</h1>
+        <div class="subtitle">3D Programming Adventure</div>
+    </div>
+
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="level-selector">
+            <button class="level-btn active" onclick="loadLevel(1)">Explorer</button>
+            <button class="level-btn" onclick="loadLevel(2)">Navigator</button>
+            <button class="level-btn" onclick="loadLevel(3)">Pathfinder</button>
+            <button class="level-btn" onclick="loadLevel(4)">Adventurer</button>
+            <button class="level-btn" onclick="loadLevel(5)">Master</button>
+        </div>
+
+        <div class="stats">
+            <div style="margin-bottom: 10px; font-size: 14px; color: #4CAF50;" id="levelTitle">Explorer: First Treasure</div>
+            <div>🪙 <span id="carrotCount">0</span> / <span id="totalCarrots">2</span></div>
+            <div style="font-size: 12px; opacity: 0.8;">⏱️ Time: <span id="levelTime">0:00</span></div>
+            <div style="font-size: 12px; opacity: 0.8;">⭐ Total Score: <span id="totalScore">0</span></div>
+        </div>
+
+        <div class="ui-panel" id="uiPanel">
+            <div class="panel-header">
+                <div class="panel-title">💻 Command Center</div>
+                <button class="close-btn" onclick="toggleCommandCenter()">×</button>
+            </div>
+            
+            <div class="code-blocks">
+                <button class="code-block" onclick="addCommand('moveForward')">⬆️ Forward</button>
+                <button class="code-block" onclick="addCommand('moveBack')">⬇️ Back</button>
+                <button class="code-block" onclick="addCommand('turnLeft')">↩️ Turn Left</button>
+                <button class="code-block" onclick="addCommand('turnRight')">↪️ Turn Right</button>
+            </div>
+
+            <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #4CAF50;">
+                📝 Code Sequence
+            </div>
+            <div class="code-sequence" id="codeSequence">
+                <span style="color: #ccc; font-style: italic;">Build your treasure hunting algorithm...</span>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn run-btn" onclick="runCode()">🚀 Run</button>
+                <button class="control-btn reset-btn" onclick="resetCode()">🔄 Reset</button>
+            </div>
+
+            <div class="status" id="status">Ready to hunt for treasure! 🏴‍☠️</div>
+        </div>
+
+        <button class="floating-icon" id="floatingIcon" onclick="toggleCommandCenter()">💻</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game variables
+        let scene, camera, renderer, clock;
+        let bunnyMesh, carrotMeshes = [], ground;
+        let gameWorld = new THREE.Group();
+        let currentLevel = 1;
+        let bunnyPosition = { x: 0, z: 0 };
+        let bunnyRotation = 0;
+        let codeSequence = [];
+        let collectedCarrots = 0;
+        let isRunning = false;
+        let gameScaleFactor = 1;
+        let levelStartTime = 0;
+        let gameStarted = false;
+        let currentPlayerName = '';
+        let timerInterval = null;
+
+        // Leaderboard variables - comprehensive tracking
+        let leaderboard = [];
+        
+        const levels = {
+            1: {
+                title: "Explorer: First Treasure",
+                bunnyStart: { x: 0, z: 0 },
+                carrots: [{ x: 2, z: 0 }, { x: 4, z: 0 }],
+                gridSize: 6,
+                baseScore: 100
+            },
+            2: {
+                title: "Navigator: Cross Roads",
+                bunnyStart: { x: 2, z: 2 },
+                carrots: [{ x: 1, z: 2 }, { x: 3, z: 2 }, { x: 2, z: 1 }, { x: 2, z: 3 }],
+                gridSize: 6,
+                baseScore: 200
+            },
+            3: {
+                title: "Pathfinder: Golden Trail",
+                bunnyStart: { x: 0, z: 0 },
+                carrots: [{ x: 1, z: 0 }, { x: 2, z: 0 }, { x: 2, z: 1 }, { x: 2, z: 2 }],
+                gridSize: 6,
+                baseScore: 300
+            },
+            4: {
+                title: "Adventurer: Hidden Coins",
+                bunnyStart: { x: 1, z: 1 },
+                carrots: [{ x: 0, z: 0 }, { x: 2, z: 0 }, { x: 0, z: 2 }, { x: 2, z: 2 }],
+                gridSize: 6,
+                baseScore: 400
+            },
+            5: {
+                title: "Master: Treasure Vault",
+                bunnyStart: { x: 2, z: 4 },
+                carrots: [{ x: 0, z: 0 }, { x: 1, z: 0 }, { x: 3, z: 0 }, { x: 4, z: 0 }, { x: 2, z: 1 }],
+                gridSize: 6,
+                baseScore: 500
+            }
+        };
+
+        // Timer functions
+        function startTimer() {
+            stopTimer(); // Clear any existing timer
+            levelStartTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - levelStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('levelTime').textContent = timeString;
+        }
+
+        function getElapsedTime() {
+            return Math.round((Date.now() - levelStartTime) / 1000);
+        }
+
+        // Enhanced leaderboard functions
+        function loadLeaderboard() {
+            try {
+                const saved = localStorage.getItem('treasureGameLeaderboard');
+                if (saved) {
+                    leaderboard = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.log('Could not load leaderboard data');
+                leaderboard = [];
+            }
+        }
+
+        function saveLeaderboard() {
+            try {
+                localStorage.setItem('treasureGameLeaderboard', JSON.stringify(leaderboard));
+            } catch (e) {
+                console.log('Could not save leaderboard data');
+            }
+        }
+
+        function updatePlayerRecord(playerName, levelNum, levelScore, commands, time) {
+            // Find existing player record
+            let playerRecord = leaderboard.find(record => record.name === playerName);
+            
+            if (!playerRecord) {
+                // Create new player record
+                playerRecord = {
+                    name: playerName,
+                    totalScore: 0,
+                    levelsCompleted: [],
+                    levelDetails: {},
+                    lastPlayed: new Date().toLocaleDateString(),
+                    timestamp: Date.now()
+                };
+                leaderboard.push(playerRecord);
+            }
+
+            // Update level completion if this is a better score or first completion
+            const existingLevelDetail = playerRecord.levelDetails[levelNum];
+            const isNewRecord = !existingLevelDetail || levelScore > existingLevelDetail.score;
+
+            if (isNewRecord) {
+                // Update/add level details
+                playerRecord.levelDetails[levelNum] = {
+                    score: levelScore,
+                    commands: commands,
+                    time: time,
+                    date: new Date().toLocaleDateString()
+                };
+
+                // Add to completed levels if not already there
+                if (!playerRecord.levelsCompleted.includes(levelNum)) {
+                    playerRecord.levelsCompleted.push(levelNum);
+                    playerRecord.levelsCompleted.sort((a, b) => a - b);
+                }
+
+                // Recalculate total score from all level best scores
+                playerRecord.totalScore = 0;
+                Object.values(playerRecord.levelDetails).forEach(detail => {
+                    playerRecord.totalScore += detail.score;
+                });
+
+                playerRecord.lastPlayed = new Date().toLocaleDateString();
+                playerRecord.timestamp = Date.now();
+
+                // Sort leaderboard by total score
+                leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+
+                // Keep only top 50 players
+                if (leaderboard.length > 50) {
+                    leaderboard = leaderboard.slice(0, 50);
+                }
+
+                saveLeaderboard();
+                return true; // New record achieved
+            }
+            
+            return false; // No new record
+        }
+
+        function showLeaderboard() {
+            const modal = document.getElementById('leaderboardModal');
+            const listContainer = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length === 0) {
+                listContainer.innerHTML = '<div class="no-scores">No adventurers yet! Complete a level to join the Hall of Fame. 🎯</div>';
+            } else {
+                listContainer.innerHTML = '';
+                
+                leaderboard.forEach((player, index) => {
+                    const rank = index + 1;
+                    const isCurrentPlayer = player.name === currentPlayerName;
+                    
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = `leaderboard-entry${rank <= 3 ? ` rank-${rank}` : ''}${isCurrentPlayer ? ' personal-best' : ''}`;
+                    
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                    
+                    // Create level progress indicators
+                    const levelProgressHTML = Array.from({length: 5}, (_, i) => {
+                        const levelNum = i + 1;
+                        const isCompleted = player.levelsCompleted.includes(levelNum);
+                        const levelDetail = player.levelDetails[levelNum];
+                        const levelScore = levelDetail ? levelDetail.score : 0;
+                        const levelTime = levelDetail ? `${Math.floor(levelDetail.time / 60)}:${(levelDetail.time % 60).toString().padStart(2, '0')}` : '';
+                        
+                        return `<div class="level-indicator ${isCompleted ? 'level-completed' : 'level-incomplete'}" 
+                                     title="${isCompleted ? `Level ${levelNum}: ${levelScore} pts in ${levelTime}` : `Level ${levelNum}: Not completed`}">
+                                    ${levelNum}
+                                </div>`;
+                    }).join('');
+
+                    const completionRate = Math.round((player.levelsCompleted.length / 5) * 100);
+                    const avgScore = player.levelsCompleted.length > 0 ? 
+                                   Math.round(player.totalScore / player.levelsCompleted.length) : 0;
+
+                    entryDiv.innerHTML = `
+                        <div class="leaderboard-rank">${medal}</div>
+                        <div class="leaderboard-player">
+                            <div class="leaderboard-name">${player.name}${isCurrentPlayer ? ' 👑' : ''}</div>
+                            <div class="leaderboard-details">
+                                ${player.levelsCompleted.length}/5 levels • ${completionRate}% complete • Avg: ${avgScore} pts
+                            </div>
+                            <div class="leaderboard-details">
+                                Last played: ${player.lastPlayed}
+                            </div>
+                            <div class="level-progress">${levelProgressHTML}</div>
+                        </div>
+                        <div class="leaderboard-score">
+                            <div>${player.totalScore}</div>
+                            <div style="font-size: 12px; opacity: 0.7;">total</div>
+                        </div>
+                    `;
+                    
+                    listContainer.appendChild(entryDiv);
+                });
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function hideLeaderboard() {
+            document.getElementById('leaderboardModal').classList.remove('show');
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Are you sure you want to clear all scores? This cannot be undone!')) {
+                leaderboard = [];
+                saveLeaderboard();
+                showLeaderboard();
+            }
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('playerNameWelcome').value.trim();
+            
+            if (!nameInput || nameInput.length < 1) {
+                alert('Please enter your name to start the adventure!');
+                document.getElementById('playerNameWelcome').focus();
+                document.getElementById('playerNameWelcome').style.borderColor = '#ff4757';
+                return;
+            }
+            
+            currentPlayerName = nameInput;
+            document.getElementById('currentPlayerName').textContent = currentPlayerName;
+            document.getElementById('playerInfo').style.display = 'block';
+            document.getElementById('welcomeModal').style.display = 'none';
+            
+            gameStarted = true;
+            loadLevel(1);
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
+        }
+
+        function checkForHighScore(levelScore) {
+            const wasNewRecord = updatePlayerRecord(currentPlayerName, currentLevel, levelScore, codeSequence.length, getElapsedTime());
+            
+            if (wasNewRecord) {
+                // Update total score display
+                const playerRecord = leaderboard.find(record => record.name === currentPlayerName);
+                if (playerRecord) {
+                    document.getElementById('totalScore').textContent = playerRecord.totalScore;
+                }
+                
+                // Show leaderboard if it's a top score or significant achievement
+                const playerRank = leaderboard.findIndex(record => record.name === currentPlayerName) + 1;
+                if (playerRank <= 10 || (currentLevel === 5 && playerRecord.levelsCompleted.length === 5)) {
+                    setTimeout(() => {
+                        showLeaderboard();
+                    }, 1500);
+                }
+            }
+        }
+
+        // Enhanced scoring system
+        function calculateScore(level, timeBonus, efficiencyBonus) {
+            const baseScore = levels[level].baseScore;
+            const finalScore = baseScore + timeBonus + efficiencyBonus;
+            return Math.max(finalScore, 0);
+        }
+
+        function init() {
+            // Load leaderboard on startup
+            loadLeaderboard();
+            
+            // Calculate responsive scaling
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const baseSize = Math.min(screenWidth, screenHeight);
+            gameScaleFactor = Math.max(0.8, Math.min(2.0, baseSize / 800));
+
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            clock = new THREE.Clock();
+
+            // Create camera with better positioning for all levels
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            updateCameraForLevel();
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('gameCanvas'),
+                antialias: true 
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight.position.set(15, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Add game world
+            scene.add(gameWorld);
+
+            // Create bunny
+            createBunny();
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Start game
+            loadLevel(1);
+            animate();
+            
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 2000);
+        }
+
+        function updateCameraForLevel() {
+            const level = levels[currentLevel];
+            const gridSize = level.gridSize;
+            
+            // Calculate optimal camera position based on grid size and level layout
+            const gridCenter = (gridSize - 1) * gameScaleFactor / 2;
+            const cameraDistance = Math.max(4, gridSize * 0.8) * gameScaleFactor;
+            const cameraHeight = Math.max(3, gridSize * 0.6) * gameScaleFactor;
+            
+            // Position camera to show the entire level optimally
+            camera.position.set(
+                gridCenter + cameraDistance * 0.8,
+                cameraHeight,
+                gridCenter + cameraDistance * 0.8
+            );
+            
+            // Look at the center of the grid
+            camera.lookAt(gridCenter, 0, gridCenter);
+        }
+
+        function createGround() {
+            // Remove old ground
+            if (ground) {
+                scene.remove(ground);
+            }
+
+            const level = levels[currentLevel];
+            const iceGrid = new THREE.Group();
+            const tileSize = 0.9 * gameScaleFactor;
+
+            for (let x = 0; x < level.gridSize; x++) {
+                for (let z = 0; z < level.gridSize; z++) {
+                    const tileGeometry = new THREE.BoxGeometry(tileSize, 0.1 * gameScaleFactor, tileSize);
+                    const tileMaterial = new THREE.MeshPhongMaterial({ 
+                        color: 0x87CEEB,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    
+                    const tile = new THREE.Mesh(tileGeometry, tileMaterial);
+                    tile.position.set(x * gameScaleFactor, 0, z * gameScaleFactor);
+                    tile.receiveShadow = true;
+                    iceGrid.add(tile);
+
+                    // Add borders
+                    const borderMaterial = new THREE.MeshPhongMaterial({ 
+                        color: 0x4682B4,
+                        transparent: true,
+                        opacity: 0.6
+                    });
+
+                    if (x < level.gridSize - 1) {
+                        const border = new THREE.Mesh(
+                            new THREE.BoxGeometry(0.05 * gameScaleFactor, 0.15 * gameScaleFactor, tileSize),
+                            borderMaterial
+                        );
+                        border.position.set((x + 0.475) * gameScaleFactor, 0.025 * gameScaleFactor, z * gameScaleFactor);
+                        iceGrid.add(border);
+                    }
+
+                    if (z < level.gridSize - 1) {
+                        const border = new THREE.Mesh(
+                            new THREE.BoxGeometry(tileSize, 0.15 * gameScaleFactor, 0.05 * gameScaleFactor),
+                            borderMaterial
+                        );
+                        border.position.set(x * gameScaleFactor, 0.025 * gameScaleFactor, (z + 0.475) * gameScaleFactor);
+                        iceGrid.add(border);
+                    }
+                }
+            }
+
+            ground = iceGrid;
+            scene.add(ground);
+        }
+
+        function createBunny() {
+            const bunny = new THREE.Group();
+            const unit = gameScaleFactor * 1.3;
+
+            // Body (white blocky cuboid)
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4 * unit, 0.35 * unit, 0.3 * unit),
+                new THREE.MeshStandardMaterial({ color: 0xffffff })
+            );
+            body.position.y = 0.175 * unit;
+            body.castShadow = true;
+            bunny.add(body);
+
+            // Head
+            const head = new THREE.Mesh(
+                new THREE.BoxGeometry(0.45 * unit, 0.45 * unit, 0.45 * unit),
+                new THREE.MeshStandardMaterial({ color: 0xffffff })
+            );
+            head.position.set(0, 0.6 * unit, 0);
+            head.castShadow = true;
+            bunny.add(head);
+
+            // Ears
+            const earGeometry = new THREE.BoxGeometry(0.1 * unit, 0.35 * unit, 0.1 * unit);
+            const earLeft = new THREE.Mesh(earGeometry, new THREE.MeshStandardMaterial({ color: 0x000000 }));
+            earLeft.position.set(-0.12 * unit, 1.0 * unit, 0);
+            bunny.add(earLeft);
+
+            const earRight = new THREE.Mesh(earGeometry, new THREE.MeshStandardMaterial({ color: 0x000000 }));
+            earRight.position.set(0.12 * unit, 1.0 * unit, 0);
+            bunny.add(earRight);
+
+            // Inner Ears
+            const innerEarGeometry = new THREE.BoxGeometry(0.06 * unit, 0.25 * unit, 0.01 * unit);
+            const innerEarLeft = new THREE.Mesh(innerEarGeometry, new THREE.MeshStandardMaterial({ color: 0xffc0cb }));
+            innerEarLeft.position.set(-0.12 * unit, 1.0 * unit, 0.051);
+            bunny.add(innerEarLeft);
+
+            const innerEarRight = new THREE.Mesh(innerEarGeometry, new THREE.MeshStandardMaterial({ color: 0xffc0cb }));
+            innerEarRight.position.set(0.12 * unit, 1.0 * unit, 0.051);
+            bunny.add(innerEarRight);
+
+            // Eyes
+            const eyeGeometry = new THREE.SphereGeometry(0.035 * unit, 12, 12);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x1c1c1c });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1 * unit, 0.65 * unit, 0.24 * unit);
+            bunny.add(leftEye);
+
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1 * unit, 0.65 * unit, 0.24 * unit);
+            bunny.add(rightEye);
+
+            // Nose - pink triangle
+            const nose = new THREE.Mesh(
+                new THREE.ConeGeometry(0.035 * unit, 0.06 * unit, 3),
+                new THREE.MeshStandardMaterial({ color: 0xff69b4 })
+            );
+            nose.rotation.x = Math.PI / 2;
+            nose.position.set(0, 0.6 * unit, 0.26 * unit);
+            bunny.add(nose);
+
+            // Whiskers - lines
+            const whiskerMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+
+            function createWhisker(x1, y1, z1, x2, y2, z2) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x1, y1, z1),
+                new THREE.Vector3(x2, y2, z2),
+                ]);
+                return new THREE.Line(geometry, whiskerMaterial);
+            }
+
+            bunny.add(createWhisker(-0.05 * unit, 0.6 * unit, 0.26 * unit, -0.16 * unit, 0.62 * unit, 0.26 * unit));
+            bunny.add(createWhisker(-0.05 * unit, 0.59 * unit, 0.26 * unit, -0.16 * unit, 0.58 * unit, 0.26 * unit));
+            bunny.add(createWhisker(0.05 * unit, 0.6 * unit, 0.26 * unit, 0.16 * unit, 0.62 * unit, 0.26 * unit));
+            bunny.add(createWhisker(0.05 * unit, 0.59 * unit, 0.26 * unit, 0.16 * unit, 0.58 * unit, 0.26 * unit));
+
+            // Feet
+            const footGeometry = new THREE.SphereGeometry(0.055 * unit, 12, 12);
+            const footMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const leftFoot = new THREE.Mesh(footGeometry, footMaterial);
+            leftFoot.position.set(-0.12 * unit, 0.02 * unit, 0.1 * unit);
+            bunny.add(leftFoot);
+            const rightFoot = new THREE.Mesh(footGeometry, footMaterial);
+            rightFoot.position.set(0.12 * unit, 0.02 * unit, 0.1 * unit);
+            bunny.add(rightFoot);
+
+            // Tail (round)
+            const tailGeometry = new THREE.SphereGeometry(0.06 * unit, 10, 10);
+            const tailMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+            tail.position.set(0, 0.15 * unit, -0.2 * unit);
+            bunny.add(tail);
+
+            // Set final reference and position
+            bunnyMesh = bunny;
+            bunny.position.y = 0.3 * gameScaleFactor;
+            gameWorld.add(bunny);
+        }
+
+        function createCarrot(x, z) {
+            const coinGroup = new THREE.Group();
+            
+            // Main coin body
+            const coinGeometry = new THREE.CylinderGeometry(0.15 * gameScaleFactor, 0.15 * gameScaleFactor, 0.05 * gameScaleFactor, 16);
+            const coinMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xFFD700,
+                shininess: 100,
+                specular: 0xFFFFFF
+            });
+            const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+            coin.castShadow = true;
+            coin.position.y = 0.15 * gameScaleFactor;
+            coinGroup.add(coin);
+
+            // Coin rim for 3D effect
+            const rimGeometry = new THREE.TorusGeometry(0.15 * gameScaleFactor, 0.02 * gameScaleFactor, 8, 16);
+            const rimMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xDAA520,
+                shininess: 80
+            });
+            const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+            rim.position.y = 0.15 * gameScaleFactor;
+            rim.rotation.x = Math.PI / 2;
+            coinGroup.add(rim);
+
+            // Dollar sign on the coin
+            const dollarGeometry = new THREE.RingGeometry(0.05 * gameScaleFactor, 0.08 * gameScaleFactor, 8, 1);
+            const dollarMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xB8860B,
+                side: THREE.DoubleSide
+            });
+            const dollarSign = new THREE.Mesh(dollarGeometry, dollarMaterial);
+            dollarSign.position.y = 0.16 * gameScaleFactor;
+            dollarSign.rotation.x = -Math.PI / 2;
+            coinGroup.add(dollarSign);
+
+            // Central line of dollar sign
+            const lineGeometry = new THREE.BoxGeometry(0.01 * gameScaleFactor, 0.002 * gameScaleFactor, 0.12 * gameScaleFactor);
+            const line = new THREE.Mesh(lineGeometry, dollarMaterial);
+            line.position.y = 0.16 * gameScaleFactor;
+            coinGroup.add(line);
+
+            // Sparkle effect
+            const sparkleGeometry = new THREE.SphereGeometry(0.03 * gameScaleFactor, 6, 6);
+            const sparkleMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFFFFF,
+                transparent: true,
+                opacity: 0.8
+            });
+            const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial);
+            sparkle.position.y = 0.25 * gameScaleFactor;
+            coinGroup.add(sparkle);
+
+            // Base shadow ring
+            const shadowGeometry = new THREE.RingGeometry(0.1 * gameScaleFactor, 0.2 * gameScaleFactor, 16);
+            const shadowMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.2,
+                side: THREE.DoubleSide
+            });
+            const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
+            shadow.position.y = 0.01 * gameScaleFactor;
+            shadow.rotation.x = -Math.PI / 2;
+            coinGroup.add(shadow);
+
+            coinGroup.position.set(x * gameScaleFactor, 0, z * gameScaleFactor);
+            coinGroup.userData = { sparkle, originalY: 0 };
+            gameWorld.add(coinGroup);
+            
+            return coinGroup;
+        }
+
+        function loadLevel(levelNum) {
+            currentLevel = levelNum;
+            const level = levels[levelNum];
+            
+            // Start timer for this level
+            startTimer();
+            
+            // Ensure UI panel is visible for new level
+            document.getElementById('uiPanel').classList.remove('hidden');
+            document.getElementById('floatingIcon').classList.remove('show');
+            
+            // Update level buttons
+            document.querySelectorAll('.level-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === levelNum);
+            });
+            
+            // Clear existing carrots
+            carrotMeshes.forEach(carrot => {
+                gameWorld.remove(carrot);
+            });
+            carrotMeshes = [];
+            
+            // Reset game state
+            bunnyPosition = { ...level.bunnyStart };
+            bunnyRotation = 0;
+            collectedCarrots = 0;
+            codeSequence = [];
+            
+            // Create ground
+            createGround();
+            
+            // Update camera for this level
+            updateCameraForLevel();
+            
+            // Create coins
+            level.carrots.forEach(carrot => {
+                const coinMesh = createCarrot(carrot.x, carrot.z);
+                carrotMeshes.push(coinMesh);
+            });
+      
+            // Position bunny
+            if (bunnyMesh) {
+                bunnyMesh.position.set(bunnyPosition.x * gameScaleFactor, 0.35*gameScaleFactor, bunnyPosition.z * gameScaleFactor);
+                bunnyMesh.rotation.y = 0;
+                bunnyMesh.rotation.x = 0;
+                bunnyMesh.rotation.z = 0;
+            }
+            
+            // Update UI
+            document.getElementById('levelTitle').textContent = level.title;
+            document.getElementById('carrotCount').textContent = collectedCarrots;
+            document.getElementById('totalCarrots').textContent = level.carrots.length;
+            
+            // Update total score display
+            const playerRecord = leaderboard.find(record => record.name === currentPlayerName);
+            if (playerRecord) {
+                document.getElementById('totalScore').textContent = playerRecord.totalScore;
+            }
+            
+            updateCodeSequence();
+        }
+
+        function addCommand(command) {
+            if (isRunning) return;
+            codeSequence.push(command);
+            updateCodeSequence();
+        }
+
+        function updateCodeSequence() {
+            const container = document.getElementById('codeSequence');
+            container.innerHTML = '';
+            
+            if (codeSequence.length === 0) {
+                container.innerHTML = '<span style="color: #ccc; font-style: italic;">Build your treasure hunting algorithm...</span>';
+                return;
+            }
+            
+            const commandText = {
+                'moveForward': '⬆️ Forward',
+                'moveBack': '⬇️ Back',
+                'turnLeft': '↩️ Turn Left',
+                'turnRight': '↪️ Turn Right'
+            };
+            
+            codeSequence.forEach((command, index) => {
+                const item = document.createElement('div');
+                item.className = 'sequence-item';
+                item.innerHTML = `
+                    ${commandText[command]}
+                    <button class="remove-btn" onclick="removeCommand(${index})">×</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function removeCommand(index) {
+            if (isRunning) return;
+            codeSequence.splice(index, 1);
+            updateCodeSequence();
+        }
+
+        function resetCode() {
+            if (isRunning) return;
+            
+            // Clear code sequence
+            codeSequence = [];
+            updateCodeSequence();
+            
+            // Reset bunny to starting position
+            const level = levels[currentLevel];
+            bunnyPosition = { ...level.bunnyStart };
+            bunnyRotation = 0;
+            
+            if (bunnyMesh) {
+                bunnyMesh.position.set(bunnyPosition.x * gameScaleFactor, 0.35 * gameScaleFactor, bunnyPosition.z * gameScaleFactor);
+                bunnyMesh.rotation.y = 0;
+                bunnyMesh.rotation.x = 0;
+                bunnyMesh.rotation.z = 0;
+            }
+            
+            // Reset carrots - remove existing and recreate
+            carrotMeshes.forEach(carrot => gameWorld.remove(carrot));
+            carrotMeshes = [];
+            level.carrots.forEach(carrot => {
+                const coinMesh = createCarrot(carrot.x, carrot.z);
+                carrotMeshes.push(coinMesh);
+            });
+            
+            // Reset collected carrots count
+            collectedCarrots = 0;
+            updateCarrotCount();
+            
+            document.getElementById('status').textContent = 'Everything reset! Ready for treasure hunting! 🗺️';
+            document.getElementById('status').className = 'status';
+        }
+
+        function toggleCommandCenter() {
+            const panel = document.getElementById('uiPanel');
+            const icon = document.getElementById('floatingIcon');
+            
+            if (panel.classList.contains('hidden')) {
+                // Show panel, hide icon
+                panel.classList.remove('hidden');
+                icon.classList.remove('show');
+            } else {
+                // Hide panel, show icon
+                panel.classList.add('hidden');
+                icon.classList.add('show');
+            }
+        }
+
+        async function runCode() {
+            if (isRunning || codeSequence.length === 0) return;
+            
+            isRunning = true;
+            document.getElementById('status').textContent = 'Running code... 🚀';
+            
+            // Hide command center during execution
+            document.getElementById('uiPanel').classList.add('hidden');
+            document.getElementById('floatingIcon').classList.remove('show');
+            
+            // Reset positions
+            const level = levels[currentLevel];
+            bunnyPosition = { ...level.bunnyStart };
+            bunnyRotation = 0;
+            collectedCarrots = 0;
+            
+            // Reset coins
+            carrotMeshes.forEach(carrot => gameWorld.remove(carrot));
+            carrotMeshes = [];
+            level.carrots.forEach(carrot => {
+                const coinMesh = createCarrot(carrot.x, carrot.z);
+                carrotMeshes.push(coinMesh);
+            });
+            
+            // Reset bunny
+            bunnyMesh.position.set(bunnyPosition.x * gameScaleFactor, 0.45* gameScaleFactor, bunnyPosition.z * gameScaleFactor);
+            bunnyMesh.rotation.y = 0;
+            updateCarrotCount();
+            
+            // Execute commands
+            for (let i = 0; i < codeSequence.length; i++) {
+                await executeCommand(codeSequence[i]);
+                if (i < codeSequence.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                }
+            }
+            
+            // Check success
+            if (collectedCarrots === level.carrots.length) {
+                // Stop timer and get completion time
+                stopTimer();
+                const completionTime = getElapsedTime();
+                const timeString = `${Math.floor(completionTime / 60)}:${(completionTime % 60).toString().padStart(2, '0')}`;
+                
+                // Calculate bonuses
+                const timeBonus = Math.max(0, 100 - completionTime * 2);
+                const efficiencyBonus = Math.max(0, 50 - codeSequence.length * 5);
+                
+                // Update score
+                const levelScore = calculateScore(currentLevel, timeBonus, efficiencyBonus);
+                
+                document.getElementById('status').textContent = `🎉 Level Complete! Time: ${timeString} (+${levelScore} points)`;
+                document.getElementById('status').className = 'status success';
+                
+                // Check for high score and update leaderboard
+                checkForHighScore(levelScore);
+                
+                // Auto-advance to next level after a brief celebration
+                setTimeout(() => {
+                    const nextLevel = currentLevel + 1;
+                    if (nextLevel <= 5) {
+                        loadLevel(nextLevel);
+                        document.getElementById('status').textContent = `🚀 Advancing to ${levels[nextLevel].title}!`;
+                        document.getElementById('status').className = 'status';
+                        
+                        // Show command center for the new level
+                        setTimeout(() => {
+                            document.getElementById('uiPanel').classList.remove('hidden');
+                            document.getElementById('floatingIcon').classList.remove('show');
+                        }, 1000);
+                    } else {
+                        // Completed all levels
+                        document.getElementById('status').textContent = '🏆 Congratulations! All levels completed!';
+                        document.getElementById('status').className = 'status success';
+                        setTimeout(() => {
+                            showLeaderboard();
+                        }, 2000);
+                    }
+                }, 2500); // 2.5 second celebration before auto-advance
+                
+            } else {
+                document.getElementById('status').textContent = `Find ${level.carrots.length - collectedCarrots} more coins! 🪙`;
+                document.getElementById('status').className = 'status';
+                
+                // Show command center again for failed attempts
+                setTimeout(() => {
+                    document.getElementById('uiPanel').classList.remove('hidden');
+                    document.getElementById('floatingIcon').classList.remove('show');
+                }, 1000);
+            }
+            
+            isRunning = false;
+        }
+
+        async function executeCommand(command) {
+            const level = levels[currentLevel];
+            
+            switch (command) {
+                case 'moveForward':
+                    const forwardDir = getForwardDirection();
+                    await moveBunny(forwardDir.x, forwardDir.z);
+                    break;
+                case 'moveBack':
+                    const backDir = getForwardDirection();
+                    await moveBunny(-backDir.x, -backDir.z);
+                    break;
+                case 'turnLeft':
+                    await rotateBunny(90);
+                    break;
+                case 'turnRight':
+                    await rotateBunny(-90);
+                    break;
+            }
+        }
+
+        function getForwardDirection() {
+            const rad = (bunnyRotation * Math.PI) / 180;
+            return {
+                x: Math.round(Math.sin(rad)),
+                z: Math.round(Math.cos(rad))
+            };
+        }
+
+        async function moveBunny(dx, dz) {
+            const level = levels[currentLevel];
+            const newX = Math.max(0, Math.min(level.gridSize - 1, bunnyPosition.x + dx));
+            const newZ = Math.max(0, Math.min(level.gridSize - 1, bunnyPosition.z + dz));
+            
+            if (newX === bunnyPosition.x && newZ === bunnyPosition.z) {
+                return; // Hit boundary
+            }
+            
+            bunnyPosition.x = newX;
+            bunnyPosition.z = newZ;
+            
+            const startPos = { ...bunnyMesh.position };
+            const endPos = { x: newX * gameScaleFactor, y: 0, z: newZ * gameScaleFactor };
+            const duration = 350;
+            const startTime = Date.now();
+            
+            return new Promise(resolve => {
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    
+                    bunnyMesh.position.x = startPos.x + (endPos.x - startPos.x) * easeProgress;
+                    bunnyMesh.position.z = startPos.z + (endPos.z - startPos.z) * easeProgress;
+                    
+                    // Walking motion
+                    const walkHeight = Math.sin(progress * Math.PI) * 0.45* gameScaleFactor;
+                    bunnyMesh.position.y = 0.24* gameScaleFactor+ walkHeight;
+
+                    // Slight body sway during walking
+                    bunnyMesh.rotation.z = Math.sin(progress * Math.PI * 6) * 0.05;
+                    
+                    // Slight forward lean during movement
+                    bunnyMesh.rotation.x = Math.sin(progress * Math.PI) * -0.1;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        bunnyMesh.position.set(endPos.x, 0.45* gameScaleFactor, endPos.z);
+                        bunnyMesh.rotation.x = 0;
+                        bunnyMesh.rotation.z = 0;
+                        checkCarrotCollection();
+                        resolve();
+                    }
+                };
+                animate();
+            });
+        }
+
+        async function rotateBunny(degrees) {
+            bunnyRotation += degrees;
+            const targetRotation = (bunnyRotation * Math.PI) / 180;
+            
+            const startRotation = bunnyMesh.rotation.y;
+            const duration = 300;
+            const startTime = Date.now();
+            
+            return new Promise(resolve => {
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    
+                    bunnyMesh.rotation.y = startRotation + (targetRotation - startRotation) * easeProgress;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        bunnyMesh.rotation.y = targetRotation;
+                        resolve();
+                    }
+                };
+                animate();
+            });
+        }
+
+        function checkCarrotCollection() {
+            const coinIndex = carrotMeshes.findIndex(coin => {
+                const coinX = Math.round(coin.position.x / gameScaleFactor);
+                const coinZ = Math.round(coin.position.z / gameScaleFactor);
+                return coinX === bunnyPosition.x && coinZ === bunnyPosition.z;
+            });
+            
+            if (coinIndex !== -1) {
+                const coinMesh = carrotMeshes[coinIndex];
+                
+                // Create collection effect
+                createCoinCollectionEffect(coinMesh.position);
+                
+                gameWorld.remove(coinMesh);
+                carrotMeshes.splice(coinIndex, 1);
+                collectedCarrots++;
+                updateCarrotCount();
+            }
+        }
+
+        function createCoinCollectionEffect(position) {
+            // Create golden particle burst
+            const particleCount = 15;
+            const particles = [];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.02 * gameScaleFactor, 6, 6),
+                    new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL(0.15, 1, 0.5 + Math.random() * 0.3),
+                        transparent: true,
+                        opacity: 1
+                    })
+                );
+                
+                particle.position.copy(position);
+                const direction = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    Math.random() + 0.5,
+                    (Math.random() - 0.5) * 2
+                ).normalize();
+                
+                particle.velocity = direction.multiplyScalar(2 + Math.random() * 1.5);
+                particles.push(particle);
+                scene.add(particle);
+            }
+            
+            // Animate golden particles
+            const animateParticles = () => {
+                particles.forEach((particle, index) => {
+                    particle.position.add(particle.velocity.clone().multiplyScalar(0.03));
+                    particle.velocity.y -= 0.08; // gravity
+                    particle.material.opacity -= 0.015;
+                    particle.rotation.x += 0.1;
+                    particle.rotation.y += 0.1;
+                    
+                    if (particle.material.opacity <= 0) {
+                        scene.remove(particle);
+                        particles.splice(index, 1);
+                    }
+                });
+                
+                if (particles.length > 0) {
+                    requestAnimationFrame(animateParticles);
+                }
+            };
+            animateParticles();
+        }
+
+        function updateCarrotCount() {
+            document.getElementById('carrotCount').textContent = collectedCarrots;
+        }
+
+        function goToNextLevel() {
+            // This function is now mainly for manual level selection
+            const nextLevel = currentLevel + 1;
+            if (nextLevel <= 5) {
+                loadLevel(nextLevel);
+            } else {
+                // Completed all levels - show final leaderboard
+                setTimeout(() => {
+                    showLeaderboard();
+                }, 500);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // Update camera position for current level
+            updateCameraForLevel();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const elapsedTime = clock.getElapsedTime();
+            
+            // Animate explorer idle
+            if (bunnyMesh && !isRunning) {
+                bunnyMesh.position.y += Math.sin(elapsedTime * 1.5) * 0.002 * gameScaleFactor;
+                bunnyMesh.rotation.y = Math.sin(elapsedTime * 0.5) * 0.1;
+            }
+            
+            // Animate treasure coins
+            carrotMeshes.forEach((carrot) => {
+                if (carrot.parent && carrot.userData.sparkle) {
+                    // Only animate sparkle, not coin movement or rotation
+                    carrot.userData.sparkle.material.opacity = 0.8;
+                    carrot.userData.sparkle.scale.setScalar(1.0);
+                }
+            });
+
+            
+            renderer.render(scene, camera);
+        }
+
+        // Make functions globally accessible for HTML onclick handlers
+        window.addCommand = addCommand;
+        window.removeCommand = removeCommand;
+        window.resetCode = resetCode;
+        window.runCode = runCode;
+        window.toggleCommandCenter = toggleCommandCenter;
+        window.loadLevel = loadLevel;
+        window.goToNextLevel = goToNextLevel;
+        window.startGame = startGame;
+        window.showLeaderboard = showLeaderboard;
+        window.hideLeaderboard = hideLeaderboard;
+        window.clearLeaderboard = clearLeaderboard;
+
+        // Initialize the game
+        window.addEventListener('load', init);
+        
+        // Cleanup timers when page is closed
+        window.addEventListener('beforeunload', () => {
+            stopTimer();
+        });
+    </script>
+</body>
+</html>
